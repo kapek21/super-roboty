@@ -1,0 +1,96 @@
+{
+  "pack": "Super Roboty",
+  "asset_count": 18,
+  "files": [
+    {
+      "name": "bg_workshop.png",
+      "size": "1920x1080",
+      "format": "PNG"
+    },
+    {
+      "name": "cmd_attach.png",
+      "size": "96x96",
+      "format": "PNG"
+    },
+    {
+      "name": "cmd_bolt.png",
+      "size": "96x96",
+      "format": "PNG"
+    },
+    {
+      "name": "cmd_rotate.png",
+      "size": "96x96",
+      "format": "PNG"
+    },
+    {
+      "name": "cmd_test_walk.png",
+      "size": "96x96",
+      "format": "PNG"
+    },
+    {
+      "name": "part_arm_left.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_arm_right.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_connector.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_head.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_leg_left.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_leg_right.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "part_torso.png",
+      "size": "256x256",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_combiner.png",
+      "size": "384x384",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_dino_mecha.png",
+      "size": "384x384",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_large.png",
+      "size": "384x384",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_ninja.png",
+      "size": "384x384",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_ranger_colorful.png",
+      "size": "384x384",
+      "format": "PNG"
+    },
+    {
+      "name": "robot_small.png",
+      "size": "384x384",
+      "format": "PNG"
+    }
+  ]
+}
