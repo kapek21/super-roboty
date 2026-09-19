@@ -51,7 +51,34 @@ button {
 }
 .tab.is-on, .chip.is-on, .go-btn { background: var(--yellow); box-shadow: 0 0 0 4px var(--blue); }
 .driver-card { width: 88px; height: 88px; }
-.bot-card { width: 120px; height: 140px; background: rgba(252,252,252,0.92); }
+.bot-card { width: 120px; height: 140px; background: rgba(252,252,252,0.92); position: relative; }
+.bot-count {
+  position: absolute; right: 6px; bottom: 6px;
+  min-width: 28px; height: 28px; padding: 0 6px;
+  border-radius: 999px; background: var(--yellow); color: var(--ink);
+  font-size: 16px; display: grid; place-items: center; border: 3px solid var(--ink);
+}
+.goal-tag { font-size: 40px; margin: 0; }
+.goal-row { display: flex; justify-content: center; }
+.goal-card {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: rgba(252,252,252,0.9);
+  border: 4px solid var(--ink); border-radius: 16px; color: var(--ink);
+}
+.goal-bot { width: 72px; height: 72px; object-fit: contain; }
+.program { display: flex; flex-direction: column; gap: 10px; }
+.strip {
+  min-height: 80px; padding: 8px;
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  background: rgba(24, 16, 40, 0.45); border-radius: 12px;
+}
+.cmd.is-placed { background: var(--green); }
+.cmd.is-slot { background: var(--blue); opacity: 0.55; min-width: 72px; }
+.cmd.is-done { outline: 3px solid var(--yellow); }
+.cmd.is-now { transform: scale(1.08); }
+.cmd.is-hint { box-shadow: 0 0 0 4px var(--yellow); background: var(--yellow); }
+.cmd.play { background: var(--green); color: var(--ink); font-size: 36px; }
+.cmd.play:disabled { opacity: 0.4; }
 .grid { max-width: 440px; }
 .mixer { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .mix-preview { display: flex; gap: 8px; padding: 12px 20px; border: 4px solid var(--ink); border-radius: 16px; }
@@ -76,8 +103,12 @@ button {
   background: rgba(252, 232, 116, 0.25);
   border: 4px solid var(--ink);
   border-radius: 16px;
+  position: relative;
 }
-.stage-part { width: min(28vw, 140px); height: auto; }
+.stage.is-fail { background: rgba(228, 0, 88, 0.28); }
+.stage-part { width: min(22vw, 110px); height: auto; }
+.stage-part.is-fall { animation: fall 0.6s forwards; }
+.fail-face { position: absolute; top: 8px; font-size: 48px; margin: 0; }
 
 .is-shake { animation: shake 0.4s; }
 @keyframes shake {
@@ -96,11 +127,40 @@ button {
 .walk-bot {
   width: min(70vw, 320px);
   height: auto;
-  animation: stroll 1.6s ease-in-out infinite;
 }
+.walk-bot.is-bounce { animation: stroll 1.2s ease-in-out infinite; }
+.walk-bot.is-pose { animation: pose 1.4s ease-in-out infinite; }
+.walk-bot.is-slash { animation: slash 0.7s ease-in-out infinite; }
+.walk-bot.is-stomp { animation: stomp 0.9s ease-in-out infinite; }
+.walk-bot.is-merge { animation: merge 1.6s ease-in-out infinite; }
+.walk-bot.is-heavy { animation: heavy 1.5s ease-in-out infinite; }
 @keyframes stroll {
   0%, 100% { transform: translateX(-24px) rotate(-3deg); }
   50% { transform: translateX(24px) rotate(3deg); }
+}
+@keyframes pose {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08) rotate(-4deg); }
+}
+@keyframes slash {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-18deg) translateX(12px); }
+}
+@keyframes stomp {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-18px); }
+  55% { transform: translateY(8px); }
+}
+@keyframes merge {
+  0%, 100% { filter: hue-rotate(0deg); transform: scale(1); }
+  50% { filter: hue-rotate(40deg); transform: scale(1.06); }
+}
+@keyframes heavy {
+  0%, 100% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+}
+@keyframes fall {
+  to { transform: translateY(48px) rotate(28deg); opacity: 0.15; }
 }
 
 .brick-face { font-size: 40px; }

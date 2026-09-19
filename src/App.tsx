@@ -1,40 +1,80 @@
-import { useCallback, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { driverEmoji, driverSrc, loadDriver, saveDriver, type SavedDriver } from './drivers';
-import { BUILD_BANK, BUILD_ORDER, PARTS, ROBOTS, type PartId, type RobotDef } from './robots';
+import {
+  ALL_PARTS,
+  FAIL_FACE,
+  PARTS,
+  ROBOTS,
+  hintPart,
+  runBuild,
+  type FailKind,
+  type PartId,
+  type RobotDef,
+} from './robots';
 import { AssetImg } from './ui/AssetImg';
 import { DriverGallery } from './ui/DriverGallery';
 
-type Phase = 'builder' | 'pick-bot' | 'build' | 'walk';
+type Phase = 'builder' | 'pick-bot' | 'program' | 'run' | 'fail' | 'win';
+
+const STEP_MS = 700;
+const MAX_STRIP = 8;
 
 export function App(): JSX.Element {
   const [builder, setBuilder] = useState<SavedDriver | null>(() => loadDriver());
   const [phase, setPhase] = useState<Phase>(loadDriver() ? 'pick-bot' : 'builder');
   const [bot, setBot] = useState<RobotDef>(ROBOTS[0]!);
   const [strip, setStrip] = useState<PartId[]>([]);
-  const [shake, setShake] = useState(false);
+  const [cursor, setCursor] = useState(0);
+  const [fail, setFail] = useState<FailKind | null>(null);
+  const [hint, setHint] = useState<PartId | null>(null);
 
-  const step = strip.length;
-  const expected = BUILD_ORDER[step];
   const face = builder ? driverEmoji(builder) : '🔧';
   const faceSrc = builder ? driverSrc(builder) : null;
+  const shown = strip.slice(0, Math.max(0, cursor));
 
-  const tryPart = useCallback(
-    (id: PartId): void => {
-      const want = BUILD_ORDER[strip.length];
-      if (!want) return;
-      if (id !== want) {
-        setShake(true);
-        window.setTimeout(() => setShake(false), 420);
+  const pickBot = (next: RobotDef): void => {
+    setBot(next);
+    setStrip([]);
+    setCursor(0);
+    setFail(null);
+    setHint(null);
+    setPhase('program');
+  };
+
+  const addPart = (id: PartId): void => {
+    if (phase !== 'program') return;
+    if (strip.length >= MAX_STRIP) return;
+    setHint(null);
+    setStrip((s) => [...s, id]);
+  };
+
+  const play = useCallback((): void => {
+    if (strip.length === 0) return;
+    setHint(null);
+    setFail(null);
+    setCursor(0);
+    setPhase('run');
+  }, [strip.length]);
+
+  useEffect(() => {
+    if (phase !== 'run') return;
+    const outcome = runBuild(strip, bot);
+    const limit = outcome.ok ? strip.length : outcome.failAt + 1;
+    const timer = window.setTimeout(() => {
+      const next = cursor + 1;
+      if (next < limit) {
+        setCursor(next);
         return;
       }
-      const next = [...strip, id];
-      setStrip(next);
-      if (next.length === BUILD_ORDER.length) {
-        window.setTimeout(() => setPhase('walk'), 500);
+      setCursor(limit);
+      if (outcome.ok) setPhase('win');
+      else {
+        setFail(outcome.fail);
+        setPhase('fail');
       }
-    },
-    [strip],
-  );
+    }, cursor === 0 ? 280 : STEP_MS);
+    return () => window.clearTimeout(timer);
+  }, [bot, cursor, phase, strip]);
 
   return (
     <div
@@ -50,7 +90,7 @@ export function App(): JSX.Element {
           {faceSrc ? <AssetImg src={faceSrc} fallback={face} className="tiny-img" /> : face}
         </button>
         {phase !== 'builder' && phase !== 'pick-bot' && (
-          <button type="button" className="tiny" onClick={() => setPhase('pick-bot')}>
+          <button type="button" className="tiny" onClick={() => setPhase('pick-bot')} aria-label="szafa">
             🏠
           </button>
         )}
@@ -68,59 +108,141 @@ export function App(): JSX.Element {
 
       {phase === 'pick-bot' && (
         <div className="hub">
+          <p className="goal-tag">🎯</p>
           <div className="grid">
             {ROBOTS.map((r) => (
               <button
                 key={r.id}
                 type="button"
                 className="driver-card bot-card"
-                onClick={() => {
-                  setBot(r);
-                  setStrip([]);
-                  setPhase('build');
-                }}
+                onClick={() => pickBot(r)}
+                aria-label={`robot ${r.emoji}`}
               >
                 <AssetImg src={r.file} fallback={r.emoji} className="bot-img" />
+                <span className="bot-count">{r.recipe.length}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {phase === 'build' && expected && (
+      {(phase === 'program' || phase === 'run' || phase === 'fail' || phase === 'win') && (
         <>
-          <div className="plan">
-            {BUILD_ORDER.map((id, i) => (
-              <div key={id} className={`plan-step ${i === step ? 'is-next' : i < step ? 'is-done' : ''}`}>
-                <AssetImg src={PARTS[id].file} fallback={PARTS[id].emoji} className="plan-img" />
+          <div className="goal-row">
+            <div className="goal-card">
+              <span aria-hidden>🎯</span>
+              <AssetImg src={bot.file} fallback={bot.emoji} className="goal-bot" />
+            </div>
+          </div>
+
+          <div
+            className={`stage ${phase === 'fail' ? 'is-fail' : ''} ${phase === 'run' ? 'is-run' : ''}`}
+          >
+            {phase === 'win' ? (
+              <AssetImg src={bot.file} fallback={bot.emoji} className={`walk-bot is-${bot.walk}`} />
+            ) : (
+              shown.map((id, i) => (
+                <AssetImg
+                  key={`${id}-${i}`}
+                  src={PARTS[id].file}
+                  fallback={PARTS[id].emoji}
+                  className={`stage-part ${phase === 'fail' && i === shown.length - 1 ? 'is-fall' : ''}`}
+                />
+              ))
+            )}
+            {phase === 'fail' && fail ? <p className="fail-face">{FAIL_FACE[fail]}</p> : null}
+            {phase === 'win' ? <p className="fail-face">🎉</p> : null}
+          </div>
+
+          <div className="program">
+            <div className="strip" aria-label="program">
+              {strip.map((id, i) => (
+                <div
+                  key={`${id}-${i}`}
+                  className={`cmd is-placed ${i < cursor ? 'is-done' : ''} ${
+                    phase === 'run' && i === cursor - 1 ? 'is-now' : ''
+                  }`}
+                >
+                  <AssetImg src={PARTS[id].file} fallback={PARTS[id].emoji} className="cmd-img" />
+                </div>
+              ))}
+              {phase === 'program' && strip.length < MAX_STRIP ? <div className="cmd is-slot" /> : null}
+            </div>
+
+            {phase === 'program' ? (
+              <>
+                <div className="bank">
+                  {ALL_PARTS.map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`cmd ${hint === id ? 'is-hint' : ''}`}
+                      onClick={() => addPart(id)}
+                    >
+                      <AssetImg src={PARTS[id].file} fallback={PARTS[id].emoji} className="cmd-img" />
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="cmd undo"
+                    onClick={() => setStrip((s) => s.slice(0, -1))}
+                    aria-label="cofnij"
+                  >
+                    🔙
+                  </button>
+                  <button
+                    type="button"
+                    className="cmd play"
+                    onClick={play}
+                    disabled={strip.length === 0}
+                    aria-label="start"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {phase === 'fail' ? (
+              <div className="bank">
+                <button
+                  type="button"
+                  className="cmd"
+                  onClick={() => {
+                    setPhase('program');
+                    setCursor(0);
+                    setFail(null);
+                  }}
+                  aria-label="popraw program"
+                >
+                  🔧
+                </button>
+                <button
+                  type="button"
+                  className="cmd play"
+                  onClick={() => {
+                    const outcome = runBuild(strip, bot);
+                    const prefix =
+                      outcome.fail === 'missing' ? strip : strip.slice(0, Math.max(0, outcome.failAt));
+                    setHint(hintPart(prefix, bot));
+                    setPhase('program');
+                    setCursor(0);
+                    setFail(null);
+                  }}
+                  aria-label="podpowiedź"
+                >
+                  🚜
+                </button>
               </div>
-            ))}
-          </div>
-          <div className={`stage ${shake ? 'is-shake' : ''}`}>
-            {strip.map((id) => (
-              <AssetImg key={id} src={PARTS[id].file} fallback={PARTS[id].emoji} className="stage-part" />
-            ))}
-          </div>
-          <div className="bank">
-            {BUILD_BANK.map((id) => (
-              <button key={id} type="button" className="cmd" onClick={() => tryPart(id)}>
-                <AssetImg src={PARTS[id].file} fallback={PARTS[id].emoji} className="cmd-img" />
+            ) : null}
+
+            {phase === 'win' ? (
+              <button type="button" className="go-btn" onClick={() => setPhase('pick-bot')}>
+                🏠
               </button>
-            ))}
-            <button type="button" className="cmd undo" onClick={() => setStrip((s) => s.slice(0, -1))}>
-              🔙
-            </button>
+            ) : null}
           </div>
         </>
-      )}
-
-      {phase === 'walk' && (
-        <div className="walk">
-          <AssetImg src={bot.file} fallback={bot.emoji} className="walk-bot" />
-          <button type="button" className="go-btn" onClick={() => setPhase('pick-bot')}>
-            🏠
-          </button>
-        </div>
       )}
     </div>
   );
