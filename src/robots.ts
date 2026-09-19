@@ -1,154 +1,205 @@
-export type PartId =
-  | 'leg_left'
-  | 'leg_right'
-  | 'torso'
-  | 'head'
-  | 'arm_left'
-  | 'arm_right'
-  | 'connector';
+import type { Crop } from './ui/KitImg';
+import { scramble } from './bricks';
 
-export interface PartDef {
-  id: PartId;
-  file: string;
-  emoji: string;
-}
+export type Slot = 'leg_left' | 'leg_right' | 'torso' | 'head' | 'arm_left' | 'arm_right' | 'tail';
 
-export const PARTS: Record<PartId, PartDef> = {
-  leg_left: { id: 'leg_left', file: '/assets/parts/part_leg_left.png', emoji: '🦵' },
-  leg_right: { id: 'leg_right', file: '/assets/parts/part_leg_right.png', emoji: '🦵' },
-  torso: { id: 'torso', file: '/assets/parts/part_torso.png', emoji: '📦' },
-  head: { id: 'head', file: '/assets/parts/part_head.png', emoji: '🤖' },
-  arm_left: { id: 'arm_left', file: '/assets/parts/part_arm_left.png', emoji: '💪' },
-  arm_right: { id: 'arm_right', file: '/assets/parts/part_arm_right.png', emoji: '💪' },
-  connector: { id: 'connector', file: '/assets/parts/part_connector.png', emoji: '🔌' },
+export const SLOT_EMOJI: Record<Slot, string> = {
+  leg_left: '🦵',
+  leg_right: '🦵',
+  torso: '📦',
+  head: '🙂',
+  arm_left: '💪',
+  arm_right: '💪',
+  tail: '🦕',
 };
 
-export const ALL_PARTS: readonly PartId[] = [
-  'leg_left',
-  'leg_right',
-  'torso',
-  'head',
-  'arm_left',
-  'arm_right',
-  'connector',
-];
-
-export type FailKind = 'topple' | 'head-drop' | 'arm-drop' | 'tail-drop' | 'extra' | 'missing';
+export type FailKind = 'order' | 'wrong-kit' | 'missing';
 
 export const FAIL_FACE: Record<FailKind, string> = {
-  topple: '💥',
-  'head-drop': '😵',
-  'arm-drop': '💨',
-  'tail-drop': '😵',
-  extra: '❌',
+  order: '💥',
+  'wrong-kit': '❌',
   missing: '❓',
 };
+
+export interface ManualPage {
+  slot: Slot;
+  /** Od dołu do góry — jak w instrukcji: najpierw stopa, potem kolano, potem biodro. */
+  bricks: string[];
+  decoys: string[];
+}
 
 export interface RobotDef {
   id: string;
   file: string;
   emoji: string;
-  /** Części tego bota — inna lista = inna zagadka. */
-  recipe: PartId[];
+  pages: ManualPage[];
+  crops: Partial<Record<Slot, Crop>>;
   walk: 'bounce' | 'pose' | 'slash' | 'stomp' | 'merge' | 'heavy';
 }
+
+const C = (x: string, y: string, zoom: number): Crop => ({ x, y, zoom });
 
 export const ROBOTS: readonly RobotDef[] = [
   {
     id: 'small',
     file: '/assets/robots/robot_small.png',
     emoji: '🤖',
-    recipe: ['leg_left', 'torso', 'head'],
     walk: 'bounce',
+    crops: {
+      head: C('50%', '12%', 2.7),
+      torso: C('50%', '48%', 2.5),
+      leg_left: C('32%', '90%', 3),
+      leg_right: C('70%', '90%', 3),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['blue-2x2', 'red-2x2', 'blue-2x4'], decoys: ['navy-2x2', 'yellow-slope'] },
+      { slot: 'leg_right', bricks: ['blue-2x2', 'yellow-2x2', 'blue-2x4'], decoys: ['green-2x2', 'red-slope'] },
+      { slot: 'torso', bricks: ['white-2x2', 'yellow-2x2', 'red-2x4'], decoys: ['navy-2x4', 'green-2x2'] },
+      { slot: 'head', bricks: ['white-round', 'blue-2x2', 'yellow-2x2'], decoys: ['red-2x2', 'navy-2x2'] },
+    ],
   },
   {
     id: 'ranger',
     file: '/assets/robots/robot_ranger_colorful.png',
     emoji: '🦸',
-    recipe: ['leg_left', 'torso', 'arm_left', 'head'],
     walk: 'pose',
+    crops: {
+      head: C('50%', '6%', 3.1),
+      torso: C('50%', '32%', 2.4),
+      arm_left: C('12%', '28%', 2.8),
+      arm_right: C('88%', '32%', 2.8),
+      leg_left: C('28%', '88%', 2.8),
+      leg_right: C('72%', '88%', 2.8),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['blue-2x4', 'white-2x2', 'yellow-2x2'], decoys: ['green-2x4', 'navy-2x2'] },
+      { slot: 'leg_right', bricks: ['green-2x4', 'white-2x2', 'green-2x2'], decoys: ['blue-2x4', 'red-2x2'] },
+      { slot: 'torso', bricks: ['blue-2x2', 'red-2x4', 'yellow-2x2'], decoys: ['navy-2x4', 'white-round'] },
+      { slot: 'arm_left', bricks: ['blue-2x4', 'yellow-2x2', 'blue-2x2'], decoys: ['green-2x2', 'red-slope'] },
+      { slot: 'head', bricks: ['yellow-slope', 'blue-2x2', 'red-2x2'], decoys: ['green-slope', 'white-2x2'] },
+    ],
   },
   {
     id: 'ninja',
     file: '/assets/robots/robot_ninja.png',
     emoji: '🥷',
-    recipe: ['leg_left', 'torso', 'head', 'arm_right'],
     walk: 'slash',
+    crops: {
+      head: C('48%', '8%', 3.1),
+      torso: C('50%', '40%', 2.4),
+      arm_left: C('12%', '40%', 2.8),
+      arm_right: C('88%', '40%', 2.8),
+      leg_left: C('30%', '90%', 2.8),
+      leg_right: C('70%', '90%', 2.8),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['navy-2x2', 'navy-2x4', 'blue-2x2'], decoys: ['red-2x2', 'yellow-2x4'] },
+      { slot: 'leg_right', bricks: ['navy-2x2', 'navy-2x4', 'navy-2x2'], decoys: ['green-2x2', 'white-2x2'] },
+      { slot: 'torso', bricks: ['navy-2x4', 'blue-2x2', 'navy-2x4'], decoys: ['red-2x4', 'yellow-2x2'] },
+      { slot: 'head', bricks: ['navy-2x4', 'yellow-2x2', 'navy-2x2'], decoys: ['white-round', 'red-slope'] },
+      { slot: 'arm_left', bricks: ['navy-2x2', 'blue-2x4', 'navy-2x2'], decoys: ['green-2x4', 'yellow-slope'] },
+    ],
   },
   {
     id: 'dino',
     file: '/assets/robots/robot_dino_mecha.png',
     emoji: '🦕',
-    recipe: ['leg_left', 'leg_right', 'torso', 'connector', 'head'],
     walk: 'stomp',
+    crops: {
+      head: C('18%', '28%', 2.8),
+      torso: C('48%', '48%', 2.3),
+      leg_left: C('30%', '88%', 3),
+      leg_right: C('58%', '90%', 3),
+      tail: C('88%', '32%', 2.6),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['navy-2x2', 'yellow-2x4', 'navy-2x2'], decoys: ['red-2x2', 'white-2x2'] },
+      { slot: 'leg_right', bricks: ['navy-2x2', 'blue-2x4', 'navy-2x2'], decoys: ['green-2x2', 'yellow-slope'] },
+      { slot: 'torso', bricks: ['red-2x4', 'yellow-2x2', 'blue-2x4'], decoys: ['white-round', 'green-2x4'] },
+      { slot: 'tail', bricks: ['green-2x2', 'yellow-2x4', 'red-slope'], decoys: ['blue-slope', 'navy-2x4'] },
+      { slot: 'head', bricks: ['white-2x2', 'red-2x2', 'yellow-2x2'], decoys: ['navy-2x2', 'green-slope'] },
+    ],
   },
   {
     id: 'combiner',
     file: '/assets/robots/robot_combiner.png',
     emoji: '🧩',
-    recipe: ['leg_left', 'leg_right', 'torso', 'arm_left', 'arm_right', 'head'],
     walk: 'merge',
+    crops: {
+      head: C('50%', '8%', 3.2),
+      torso: C('50%', '28%', 2.4),
+      arm_left: C('12%', '22%', 2.5),
+      arm_right: C('88%', '22%', 2.5),
+      leg_left: C('28%', '78%', 2.4),
+      leg_right: C('72%', '78%', 2.4),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['yellow-2x4', 'blue-2x2', 'yellow-2x4'], decoys: ['red-2x4', 'navy-2x2'] },
+      { slot: 'leg_right', bricks: ['red-2x4', 'navy-2x2', 'red-2x4'], decoys: ['green-2x4', 'white-2x2'] },
+      { slot: 'torso', bricks: ['blue-2x2', 'red-2x4', 'white-2x2'], decoys: ['green-2x2', 'yellow-slope'] },
+      { slot: 'arm_left', bricks: ['blue-2x4', 'white-2x2', 'blue-2x4'], decoys: ['navy-2x4', 'red-2x2'] },
+      { slot: 'arm_right', bricks: ['green-2x4', 'white-2x2', 'green-2x4'], decoys: ['yellow-2x2', 'red-slope'] },
+      { slot: 'head', bricks: ['red-2x2', 'blue-2x2', 'yellow-2x2'], decoys: ['navy-2x2', 'green-slope'] },
+    ],
   },
   {
     id: 'large',
     file: '/assets/robots/robot_large.png',
     emoji: '🦾',
-    recipe: ['leg_left', 'leg_right', 'torso', 'arm_left', 'connector', 'head'],
     walk: 'heavy',
+    crops: {
+      head: C('50%', '8%', 3.1),
+      torso: C('50%', '35%', 2.3),
+      arm_left: C('10%', '35%', 2.6),
+      arm_right: C('88%', '35%', 2.6),
+      leg_left: C('28%', '90%', 2.6),
+      leg_right: C('75%', '90%', 2.6),
+    },
+    pages: [
+      { slot: 'leg_left', bricks: ['navy-2x4', 'yellow-2x2', 'blue-2x4'], decoys: ['red-2x2', 'green-2x2'] },
+      { slot: 'leg_right', bricks: ['navy-2x4', 'yellow-2x2', 'navy-2x4'], decoys: ['white-2x2', 'red-slope'] },
+      { slot: 'torso', bricks: ['blue-2x4', 'white-2x2', 'yellow-2x2'], decoys: ['green-2x4', 'red-2x4'] },
+      { slot: 'arm_left', bricks: ['navy-2x2', 'red-2x4', 'yellow-2x2'], decoys: ['green-slope', 'white-round'] },
+      { slot: 'head', bricks: ['navy-2x4', 'blue-2x2', 'yellow-2x2'], decoys: ['red-2x2', 'green-2x2'] },
+    ],
   },
 ];
 
 export interface BuildResult {
   ok: boolean;
-  attached: PartId[];
   failAt: number;
   fail: FailKind | null;
 }
 
-function legs(has: ReadonlySet<PartId>): number {
-  return (has.has('leg_left') ? 1 : 0) + (has.has('leg_right') ? 1 : 0);
-}
-
-/** Odpal program: kolejność ma fizykę. Zła sekwencja wywraca bota. */
-export function runBuild(program: readonly PartId[], robot: RobotDef): BuildResult {
-  const has = new Set<PartId>();
-  const attached: PartId[] = [];
-  const allowed = new Set(robot.recipe);
-
+export function runPage(program: readonly string[], page: ManualPage): BuildResult {
+  const need = page.bricks;
+  const bag = new Set(need);
   for (let i = 0; i < program.length; i++) {
-    const part = program[i]!;
-    if (!allowed.has(part) || has.has(part)) {
-      return { ok: false, attached, failAt: i, fail: 'extra' };
-    }
-    if (part === 'torso' && legs(has) === 0) {
-      return { ok: false, attached, failAt: i, fail: 'topple' };
-    }
-    if (part === 'head' && !has.has('torso')) {
-      return { ok: false, attached, failAt: i, fail: 'head-drop' };
-    }
-    if ((part === 'arm_left' || part === 'arm_right') && !has.has('torso')) {
-      return { ok: false, attached, failAt: i, fail: 'arm-drop' };
-    }
-    if (part === 'connector' && !has.has('torso')) {
-      return { ok: false, attached, failAt: i, fail: 'tail-drop' };
-    }
-    has.add(part);
-    attached.push(part);
+    const got = program[i]!;
+    if (!bag.has(got)) return { ok: false, failAt: i, fail: 'wrong-kit' };
+    if (got !== need[i]) return { ok: false, failAt: i, fail: 'order' };
   }
-
-  if (robot.recipe.some((id) => !has.has(id))) {
-    return { ok: false, attached, failAt: program.length, fail: 'missing' };
-  }
-  return { ok: true, attached, failAt: -1, fail: null };
+  if (program.length < need.length) return { ok: false, failAt: program.length, fail: 'missing' };
+  if (program.length > need.length) return { ok: false, failAt: need.length, fail: 'wrong-kit' };
+  return { ok: true, failAt: -1, fail: null };
 }
 
-/** Po porażce: pierwsza legalna część, której jeszcze nie ma. Nie zdradzamy planu przed Start. */
-export function hintPart(program: readonly PartId[], robot: RobotDef): PartId | null {
-  for (const part of robot.recipe) {
-    if (program.includes(part)) continue;
-    const trial = runBuild([...program, part], robot);
-    if (trial.failAt !== program.length) return part;
-    if (trial.ok || trial.fail === 'missing') return part;
-  }
-  return null;
+export function hintBrick(program: readonly string[], page: ManualPage): string | null {
+  const prefixOk = page.bricks.slice(0, program.length).every((id, i) => program[i] === id);
+  if (prefixOk) return page.bricks[program.length] ?? null;
+  return page.bricks[0] ?? null;
+}
+
+export function bankFor(page: ManualPage): string[] {
+  const needed = [...new Set(page.bricks)];
+  return scramble([...needed, ...page.decoys], page.slot);
+}
+
+export function bagFor(page: ManualPage): Array<{ id: string; qty: number }> {
+  const map = new Map<string, number>();
+  for (const id of page.bricks) map.set(id, (map.get(id) ?? 0) + 1);
+  return scramble(
+    [...map.entries()].map(([id, qty]) => ({ id, qty })),
+    `bag-${page.slot}`,
+  );
 }

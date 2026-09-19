@@ -6,7 +6,7 @@ interface Props {
   className?: string;
 }
 
-function withBase(src: string): string {
+export function withBase(src: string): string {
   if (/^(https?:|data:)/i.test(src)) return src;
   const base = import.meta.env.BASE_URL || '/';
   const path = src.replace(/^\//, '');
