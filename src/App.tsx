@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type CSSProperties } from 'react';
 import { driverEmoji, driverSrc, loadDriver, saveDriver, type SavedDriver } from './drivers';
 import { BUILD_BANK, BUILD_ORDER, PARTS, ROBOTS, type PartId, type RobotDef } from './robots';
 import { AssetImg } from './ui/AssetImg';
@@ -37,7 +37,14 @@ export function App(): JSX.Element {
   );
 
   return (
-    <div className="app">
+    <div
+      className="app"
+      style={
+        {
+          ['--workshop-bg' as string]: `url(${import.meta.env.BASE_URL}assets/workshop/bg_workshop.png)`,
+        } as CSSProperties
+      }
+    >
       <header className="top">
         <button type="button" className="tiny" onClick={() => setPhase('builder')} aria-label="budowniczy">
           {faceSrc ? <AssetImg src={faceSrc} fallback={face} className="tiny-img" /> : face}
