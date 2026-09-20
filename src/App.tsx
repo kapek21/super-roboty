@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { driverEmoji, driverSrc, loadDriver, saveDriver, type SavedDriver } from './drivers';
-import { ROBOTS, SLOT_EMOJI, bagFor, bankFor, type Place, type RobotDef } from './robots';
+import { ROBOTS, SLOT_LABEL, bagFor, bankFor, type Place, type RobotDef } from './robots';
 import { AssetImg } from './ui/AssetImg';
 import { BrickView } from './ui/BrickView';
 import { BuildPlate } from './ui/BuildPlate';
@@ -24,6 +24,7 @@ export function App(): JSX.Element {
   const nextBrick = phase === 'build' ? page.bricks[doneOnPage] ?? null : null;
   const bank = bankFor(page);
   const bag = bagFor({ ...page, bricks: page.bricks.slice(doneOnPage) });
+  const placedOnPage = page.bricks.slice(0, Math.max(0, doneOnPage));
 
   const pickBot = (next: RobotDef): void => {
     setBot(next);
@@ -40,8 +41,7 @@ export function App(): JSX.Element {
       window.setTimeout(() => setShake(false), 420);
       return;
     }
-    const nextPlaced = [...placed, nextBrick];
-    setPlaced(nextPlaced);
+    setPlaced([...placed, nextBrick]);
     setHintOn(false);
     if (doneOnPage + 1 < page.bricks.length) return;
     if (pageIndex + 1 >= bot.pages.length) {
@@ -91,7 +91,7 @@ export function App(): JSX.Element {
 
       {phase === 'pick-bot' && (
         <div className="hub">
-          <p className="goal-tag">📘</p>
+          <p className="goal-tag">Zestaw</p>
           <div className="grid">
             {ROBOTS.map((r) => (
               <button
@@ -99,9 +99,10 @@ export function App(): JSX.Element {
                 type="button"
                 className="driver-card bot-card"
                 onClick={() => pickBot(r)}
-                aria-label={`zestaw ${r.emoji}`}
+                aria-label={r.title}
               >
                 <AssetImg src={r.file} fallback={r.emoji} className="bot-img" />
+                <span className="bot-name">{r.title}</span>
                 <span className="bot-count">{r.pages.length}</span>
               </button>
             ))}
@@ -112,10 +113,15 @@ export function App(): JSX.Element {
       {(phase === 'build' || phase === 'win') && (
         <>
           <div className="manual">
-            <span className="manual-step">
-              {Math.min(pageIndex + 1, bot.pages.length)}/{bot.pages.length}
-            </span>
-            <span className="manual-slot">{SLOT_EMOJI[page.slot]}</span>
+            <div className="manual-copy">
+              <span className="manual-step">
+                {Math.min(pageIndex + 1, bot.pages.length)}/{bot.pages.length}
+              </span>
+              <span className="manual-slot">{SLOT_LABEL[page.slot]}</span>
+            </div>
+            <div className="step-book" aria-label="ta strona">
+              <BuildPlate placed={placedOnPage} guides={page.bricks} mini />
+            </div>
             <AssetImg src={bot.file} fallback={bot.emoji} className="goal-bot" />
           </div>
 
@@ -129,17 +135,9 @@ export function App(): JSX.Element {
 
           {phase === 'build' ? (
             <>
-              <div className={`bag ${shake ? 'is-shake' : ''}`} aria-label="woreczek">
+              <div className={`bag ${shake ? 'is-shake' : ''}`} aria-label="klocki tej strony">
                 {bag.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className="bag-item"
-                    onClick={() => tryPlace(item.id)}
-                    aria-label={item.id}
-                  >
-                    <BrickView id={item.id} qty={item.qty} />
-                  </button>
+                  <BrickView key={item.id} id={item.id} qty={item.qty} />
                 ))}
               </div>
               <div className="bank">

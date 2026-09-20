@@ -54,7 +54,11 @@ button {
 }
 .tab.is-on, .chip.is-on, .go-btn { background: var(--yellow); box-shadow: 0 0 0 4px var(--blue); }
 .driver-card { width: 88px; height: 88px; }
-.bot-card { width: 120px; height: 140px; background: rgba(252,252,252,0.92); position: relative; }
+.bot-card { width: 132px; height: 158px; background: rgba(252,252,252,0.92); position: relative; padding: 6px 6px 28px; }
+.bot-name {
+  position: absolute; left: 8px; bottom: 6px;
+  font-size: 13px; font-weight: 700; color: var(--ink);
+}
 .bot-count {
   position: absolute; right: 6px; bottom: 6px;
   min-width: 28px; height: 28px; padding: 0 6px;
@@ -63,11 +67,14 @@ button {
 }
 .manual {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 6px 12px; background: rgba(252,252,252,0.92);
+  padding: 6px 10px; background: rgba(252,252,252,0.92);
   border: 4px solid var(--ink); border-radius: 16px; color: var(--ink); align-self: center;
+  max-width: 100%;
 }
+.manual-copy { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
 .manual-step { font-size: 22px; font-weight: 700; }
-.manual-slot { font-size: 32px; }
+.manual-slot { font-size: 16px; font-weight: 700; }
+.step-book { width: 110px; height: 128px; flex-shrink: 0; }
 .bag {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
   padding: 8px; background: #e9c46a; border: 4px dashed var(--ink); border-radius: 16px;
@@ -80,7 +87,7 @@ button {
 .ghost {
   opacity: 0.35; font-size: 40px; filter: grayscale(0.4);
 }
-.goal-tag { font-size: 40px; margin: 0; }
+.goal-tag { font-size: 22px; margin: 0; font-weight: 700; }
 .goal-row { display: flex; justify-content: center; }
 .goal-card {
   display: flex; align-items: center; gap: 8px;
@@ -128,32 +135,51 @@ button {
 }
 .plate {
   display: grid;
-  width: min(94vw, 440px);
+  width: min(94vw, 520px);
   height: 100%;
-  min-height: 160px;
-  gap: 2px;
-  padding: 8px 8px 14px;
+  min-height: 180px;
+  gap: 1px;
+  padding: 8px 8px 12px;
+  align-content: end;
   background:
-    repeating-linear-gradient(90deg, transparent 0 12%, rgba(24,16,40,0.15) 12% 13%),
-    linear-gradient(#5c94fc, #2868a0);
+    repeating-linear-gradient(90deg, transparent 0 8%, rgba(24,16,40,0.18) 8% 9%),
+    linear-gradient(#7eb0fc, #2868a0);
   border: 4px solid var(--ink);
   border-radius: 16px;
   align-self: center;
+}
+.plate.is-mini {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 3px;
+  gap: 0;
+  border-width: 3px;
+  border-radius: 10px;
 }
 .plate.is-win { animation: stroll 1.2s ease-in-out infinite; }
 .plate-cell { display: grid; place-items: stretch; min-height: 0; min-width: 0; }
 .plate-cell.is-ghost {
   border: 3px dashed var(--yellow);
-  border-radius: 8px;
-  opacity: 0.7;
+  border-radius: 6px;
+  opacity: 0.75;
 }
+.plate-cell.is-guide .lego { opacity: 0.28; filter: grayscale(0.15); }
 .plate-cell .lego {
   width: 100%;
-  height: 88%;
+  height: 92%;
   min-width: 0;
   align-self: end;
   transform: none;
 }
+.plate.is-mini .lego {
+  height: 90%;
+  border-width: 2px;
+  padding: 3px 1px 1px;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+}
+.plate.is-mini .lego-stud { width: 5px; height: 4px; top: auto; }
+.plate.is-mini .lego-studs { top: -4px; gap: 2px; }
 .bag-item {
   background: transparent;
   min-width: 0;
