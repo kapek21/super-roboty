@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { driverEmoji, driverSrc, loadDriver, saveDriver, type SavedDriver } from './drivers';
-import { ROBOTS, SLOT_LABEL, bagFor, bankFor, type Place, type RobotDef } from './robots';
+import { ROBOTS, bagFor, bankFor, type Place, type RobotDef } from './robots';
 import { AssetImg } from './ui/AssetImg';
 import { BrickView } from './ui/BrickView';
 import { BuildPlate } from './ui/BuildPlate';
@@ -117,7 +117,7 @@ export function App(): JSX.Element {
               <span className="manual-step">
                 {Math.min(pageIndex + 1, bot.pages.length)}
               </span>
-              <span className="manual-slot">{SLOT_LABEL[page.slot]}</span>
+              <span className="manual-slot">{page.title}</span>
               <span className="manual-of">/{bot.pages.length}</span>
             </div>
             <div className="step-book" aria-label="ta strona">
