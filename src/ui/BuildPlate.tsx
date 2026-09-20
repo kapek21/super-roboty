@@ -15,11 +15,19 @@ function spanOf(id: string): number {
   return brickOf(id).studs === 4 ? 2 : 1;
 }
 
-function cellStyle(p: Place): CSSProperties {
-  return {
-    gridColumn: `${p.x} / span ${spanOf(p.id)}`,
-    gridRow: `${PLATE_ROWS - p.y}`,
-  };
+function bounds(items: Place[]): { minX: number; maxX: number; minY: number; maxY: number } {
+  let minX = PLATE_COLS;
+  let maxX = 1;
+  let minY = PLATE_ROWS;
+  let maxY = 0;
+  for (const p of items) {
+    minX = Math.min(minX, p.x);
+    maxX = Math.max(maxX, p.x + spanOf(p.id) - 1);
+    minY = Math.min(minY, p.y);
+    maxY = Math.max(maxY, p.y);
+  }
+  if (items.length === 0) return { minX: 1, maxX: PLATE_COLS, minY: 0, maxY: PLATE_ROWS - 1 };
+  return { minX, maxX, minY, maxY };
 }
 
 export function BuildPlate({
@@ -29,13 +37,22 @@ export function BuildPlate({
   celebrating = false,
   mini = false,
 }: Props): JSX.Element {
+  const crop = mini ? bounds(guides.length ? guides : placed) : { minX: 1, maxX: PLATE_COLS, minY: 0, maxY: PLATE_ROWS - 1 };
+  const cols = crop.maxX - crop.minX + 1;
+  const rows = crop.maxY - crop.minY + 1;
   const placedKeys = new Set(placed.map((p) => `${p.id}-${p.x}-${p.y}`));
+
+  const cellStyle = (p: Place): CSSProperties => ({
+    gridColumn: `${p.x - crop.minX + 1} / span ${spanOf(p.id)}`,
+    gridRow: `${crop.maxY - p.y + 1}`,
+  });
+
   return (
     <div
       className={`plate ${celebrating ? 'is-win' : ''} ${mini ? 'is-mini' : ''}`}
       style={{
-        gridTemplateColumns: `repeat(${PLATE_COLS}, 1fr)`,
-        gridTemplateRows: `repeat(${PLATE_ROWS}, 1fr)`,
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
       }}
     >
       {guides.map((p, i) =>

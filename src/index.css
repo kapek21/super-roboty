@@ -74,7 +74,7 @@ button {
 .manual-copy { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
 .manual-step { font-size: 22px; font-weight: 700; }
 .manual-slot { font-size: 16px; font-weight: 700; }
-.step-book { width: 110px; height: 128px; flex-shrink: 0; }
+.step-book { width: 132px; height: 148px; flex-shrink: 0; }
 .bag {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
   padding: 8px; background: #e9c46a; border: 4px dashed var(--ink); border-radius: 16px;
@@ -164,7 +164,7 @@ button {
   border-radius: 6px;
   opacity: 0.75;
 }
-.plate-cell.is-guide .lego { opacity: 0.28; filter: grayscale(0.15); }
+.plate-cell.is-guide .lego { opacity: 0.45; }
 .plate-cell .lego {
   width: 100%;
   height: 92%;
