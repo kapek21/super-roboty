@@ -59,6 +59,8 @@ export function App(): JSX.Element {
     setHintOn(false);
   };
 
+  const allBricks = bot.pages.flatMap((p) => p.bricks);
+
   return (
     <div
       className="app"
@@ -125,23 +127,28 @@ export function App(): JSX.Element {
             </div>
             <AssetImg src={bot.file} fallback={bot.emoji} className="goal-bot" />
           </div>
+          {phase === 'build' ? (
+            <div className={`need ${shake ? 'is-shake' : ''}`} aria-label="klocki tej strony">
+              <span className="need-label">ta strona</span>
+              {bag.map((item) => (
+                <BrickView key={item.id} id={item.id} qty={item.qty} />
+              ))}
+            </div>
+          ) : null}
 
           <div className="stage">
             <BuildPlate
               placed={placed}
               ghost={hintOn ? nextBrick : null}
-              frame={bot.pages.slice(0, pageIndex + 1).flatMap((p) => p.bricks)}
+              guides={allBricks}
+              focus={page.bricks}
+              frame={allBricks}
               celebrating={phase === 'win'}
             />
           </div>
 
           {phase === 'build' ? (
             <>
-              <div className={`bag ${shake ? 'is-shake' : ''}`} aria-label="klocki tej strony">
-                {bag.map((item) => (
-                  <BrickView key={item.id} id={item.id} qty={item.qty} />
-                ))}
-              </div>
               <div className="bank">
                 {bank.map((id) => (
                   <button key={id} type="button" className="cmd" onClick={() => tryPlace(id)}>

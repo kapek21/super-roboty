@@ -7,6 +7,7 @@ interface Props {
   placed: Place[];
   ghost?: Place | null;
   guides?: Place[];
+  focus?: Place[];
   frame?: Place[];
   celebrating?: boolean;
   mini?: boolean;
@@ -14,6 +15,10 @@ interface Props {
 
 function spanOf(id: string): number {
   return brickOf(id).studs === 4 ? 2 : 1;
+}
+
+function keyOf(p: Place): string {
+  return `${p.id}-${p.x}-${p.y}`;
 }
 
 function bounds(items: Place[]): { minX: number; maxX: number; minY: number; maxY: number } {
@@ -35,6 +40,7 @@ export function BuildPlate({
   placed,
   ghost = null,
   guides = [],
+  focus = [],
   frame,
   celebrating = false,
   mini = false,
@@ -43,7 +49,8 @@ export function BuildPlate({
   const crop = bounds(cropSource);
   const cols = crop.maxX - crop.minX + 1;
   const rows = Math.max(1, crop.maxY - crop.minY + 1);
-  const placedKeys = new Set(placed.map((p) => `${p.id}-${p.x}-${p.y}`));
+  const placedKeys = new Set(placed.map(keyOf));
+  const focusKeys = new Set(focus.map(keyOf));
   const last = placed[placed.length - 1];
 
   const cellStyle = (p: Place): CSSProperties => ({
@@ -55,21 +62,29 @@ export function BuildPlate({
   return (
     <div
       className={`plate ${celebrating ? 'is-win' : ''} ${mini ? 'is-mini' : ''}`}
-      style={{
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, 1fr)`,
-      }}
+      style={
+        {
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${rows}, minmax(0, 0.62fr))`,
+          ['--stud-x' as string]: `calc(100% / ${cols})`,
+          ['--stud-y' as string]: `calc(100% / ${rows})`,
+        } as CSSProperties
+      }
     >
       {guides.map((p, i) =>
-        placedKeys.has(`${p.id}-${p.x}-${p.y}`) ? null : (
-          <div key={`g-${p.id}-${p.x}-${p.y}-${i}`} className="plate-cell is-guide" style={cellStyle(p)}>
+        placedKeys.has(keyOf(p)) ? null : (
+          <div
+            key={`g-${keyOf(p)}-${i}`}
+            className={`plate-cell is-guide ${focusKeys.has(keyOf(p)) ? 'is-step' : ''}`}
+            style={cellStyle(p)}
+          >
             <BrickView id={p.id} />
           </div>
         ),
       )}
       {placed.map((p, i) => (
         <div
-          key={`${p.id}-${p.x}-${p.y}-${i}`}
+          key={`${keyOf(p)}-${i}`}
           className={`plate-cell is-on ${last === p ? 'is-pop' : ''}`}
           style={cellStyle(p)}
         >
