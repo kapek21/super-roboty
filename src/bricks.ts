@@ -29,6 +29,7 @@ export const BRICKS: Record<string, BrickDef> = {
   'orange-2x4': { id: 'orange-2x4', color: '#f5a03a', studs: 4, kind: 'brick' },
   'orange-slope': { id: 'orange-slope', color: '#f5a03a', studs: 2, kind: 'slope' },
   'yellow-slope': { id: 'yellow-slope', color: '#fce874', studs: 2, kind: 'slope' },
+  'yellow-slope-r': { id: 'yellow-slope-r', color: '#fce874', studs: 2, kind: 'slope' },
   'red-slope': { id: 'red-slope', color: '#e40058', studs: 2, kind: 'slope' },
   'green-slope': { id: 'green-slope', color: '#40e878', studs: 2, kind: 'slope' },
   'blue-slope': { id: 'blue-slope', color: '#5c94fc', studs: 2, kind: 'slope' },

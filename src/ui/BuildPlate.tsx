@@ -65,7 +65,7 @@ export function BuildPlate({
       style={
         {
           gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, minmax(0, 0.62fr))`,
+          gridTemplateRows: `repeat(${rows}, minmax(0, 0.72fr))`,
           ['--stud-x' as string]: `calc(100% / ${cols})`,
           ['--stud-y' as string]: `calc(100% / ${rows})`,
         } as CSSProperties

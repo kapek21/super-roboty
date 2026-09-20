@@ -169,7 +169,7 @@ button {
   height: auto;
   max-height: 100%;
   min-height: 160px;
-  gap: 0;
+  gap: 5px 6px;
   padding: 16px 14px 20px;
   align-content: end;
   background:
@@ -186,27 +186,37 @@ button {
   height: 100%;
   min-height: 0;
   padding: 6px 5px 8px;
-  gap: 0;
-  border-width: 3px;
+  gap: 3px 4px;
   border-radius: 12px;
   box-shadow: inset 0 4px 0 rgba(255,255,255,0.18);
 }
 .plate.is-win { animation: stroll 1.2s ease-in-out infinite; }
-.plate-cell { display: grid; place-items: stretch; min-height: 0; min-width: 0; position: relative; }
+.plate-cell { display: grid; place-items: stretch; min-height: 0; min-width: 0; position: relative; overflow: visible; }
 .plate-cell.is-ghost {
   border: 3px dashed var(--yellow);
   border-radius: 8px;
   opacity: 0.8;
   background: rgba(252, 232, 116, 0.18);
 }
-.plate-cell.is-guide .lego { opacity: 0.16; filter: saturate(0.45) grayscale(0.15); }
-.plate-cell.is-guide.is-step .lego { opacity: 0.5; filter: none; }
-.plate-cell.is-on .lego { opacity: 1; filter: none; }
+.plate-cell.is-guide .lego {
+  opacity: 0.5;
+  filter: none;
+  box-shadow: none;
+  outline: 2px dashed var(--ink);
+  outline-offset: -2px;
+}
+.plate-cell.is-guide.is-step .lego {
+  opacity: 0.78;
+  outline-color: var(--yellow);
+  outline-width: 3px;
+}
+.plate-cell.is-on .lego { opacity: 1; filter: none; outline: none; }
 .plate-cell .lego {
   width: 100%;
-  height: 124%;
+  height: 100%;
   min-width: 0;
-  align-self: end;
+  min-height: 0;
+  align-self: stretch;
   transform: none;
 }
 .plate-cell.is-pop .lego { animation: brick-pop 0.28s ease-out; }
@@ -215,7 +225,7 @@ button {
   100% { transform: translateY(0) scale(1); }
 }
 .plate.is-mini .lego {
-  height: 122%;
+  height: 100%;
   border-width: 2px;
   padding: 5px 2px 2px;
 }
@@ -347,8 +357,11 @@ button {
 }
 .lego-w4 { min-width: 68px; }
 .lego-slope {
-  clip-path: polygon(0 100%, 0 52%, 100% 16%, 100% 100%);
+  clip-path: polygon(0 100%, 0 46%, 100% 0, 100% 100%);
   padding-top: 14px;
+}
+.lego-slope-r {
+  clip-path: polygon(0 100%, 0 0, 100% 46%, 100% 100%);
 }
 .lego-round { border-radius: 42% 42% 8px 8px; }
 .lego-studs { position: absolute; top: -8px; display: flex; gap: 4px; }

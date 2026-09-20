@@ -11,7 +11,7 @@ export function BrickView({ id, qty, className }: Props): JSX.Element {
   const b = brickOf(id);
   return (
     <span
-      className={`lego lego-${b.kind} lego-w${b.studs} ${className ?? ''}`}
+      className={`lego lego-${b.kind} lego-w${b.studs} ${b.id.endsWith('-r') ? 'lego-slope-r' : ''} ${className ?? ''}`}
       style={{ ['--brick' as string]: b.color } as CSSProperties}
     >
       <span className="lego-studs" aria-hidden>
