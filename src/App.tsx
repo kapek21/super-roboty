@@ -130,7 +130,7 @@ export function App(): JSX.Element {
             <BuildPlate
               placed={placed}
               ghost={hintOn ? nextBrick : null}
-              frame={bot.pages.flatMap((p) => p.bricks)}
+              frame={bot.pages.slice(0, pageIndex + 1).flatMap((p) => p.bricks)}
               celebrating={phase === 'win'}
             />
           </div>
