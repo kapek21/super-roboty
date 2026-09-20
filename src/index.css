@@ -54,10 +54,18 @@ button {
 }
 .tab.is-on, .chip.is-on, .go-btn { background: var(--yellow); box-shadow: 0 0 0 4px var(--blue); }
 .driver-card { width: 88px; height: 88px; }
-.bot-card { width: 132px; height: 158px; background: rgba(252,252,252,0.92); position: relative; padding: 6px 6px 28px; }
+.bot-card {
+  width: 140px;
+  height: 168px;
+  background: linear-gradient(#ffffff, #eef4ff);
+  position: relative;
+  padding: 8px 8px 32px;
+  box-shadow: 0 6px 0 var(--ink);
+}
+.bot-card:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--ink); }
 .bot-name {
-  position: absolute; left: 8px; bottom: 6px;
-  font-size: 13px; font-weight: 700; color: var(--ink);
+  position: absolute; left: 8px; bottom: 8px;
+  font-size: 14px; font-weight: 700; color: var(--ink);
 }
 .bot-count {
   position: absolute; right: 6px; bottom: 6px;
@@ -66,18 +74,28 @@ button {
   font-size: 16px; display: grid; place-items: center; border: 3px solid var(--ink);
 }
 .manual {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 6px 10px; background: rgba(252,252,252,0.92);
-  border: 4px solid var(--ink); border-radius: 16px; color: var(--ink); align-self: center;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 8px 12px 10px;
+  background: linear-gradient(#fffdf4, #f0e2b8);
+  border: 4px solid var(--ink); border-radius: 18px; color: var(--ink); align-self: center;
   max-width: 100%;
+  box-shadow: 0 5px 0 #c9b37a, 0 8px 0 var(--ink);
 }
-.manual-copy { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
-.manual-step { font-size: 22px; font-weight: 700; }
-.manual-slot { font-size: 16px; font-weight: 700; }
-.step-book { width: 132px; height: 148px; flex-shrink: 0; }
+.manual-copy { display: flex; flex-direction: column; align-items: center; min-width: 52px; gap: 2px; }
+.manual-step {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--yellow); border: 3px solid var(--ink);
+  font-size: 22px; font-weight: 700; display: grid; place-items: center;
+}
+.manual-slot { font-size: 15px; font-weight: 700; text-transform: uppercase; }
+.manual-of { font-size: 12px; opacity: 0.7; }
+.step-book { width: 140px; height: 156px; flex-shrink: 0; }
 .bag {
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-  padding: 8px; background: #e9c46a; border: 4px dashed var(--ink); border-radius: 16px;
+  padding: 10px 14px 12px;
+  background: linear-gradient(#f6d56b, #e2b13c);
+  border: 4px solid var(--ink); border-radius: 28px 28px 18px 18px;
+  box-shadow: inset 0 8px 0 rgba(255,255,255,0.28), 0 4px 0 #b88820;
 }
 .stack {
   position: absolute; right: 10px; bottom: 10px;
@@ -123,63 +141,70 @@ button {
 .plan-step.is-done { background: var(--green); }
 
 .stage {
-  flex: 1 1 28%;
-  min-height: 110px;
-  max-height: 42vh;
+  flex: 1 1 36%;
+  min-height: 140px;
+  max-height: 48vh;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   gap: 4px;
-  padding: 8px;
+  padding: 4px 8px 0;
   position: relative;
 }
 .plate {
   display: grid;
-  width: min(94vw, 520px);
+  width: min(92vw, 480px);
   height: 100%;
-  min-height: 180px;
-  gap: 1px;
-  padding: 8px 8px 12px;
+  min-height: 190px;
+  gap: 0;
+  padding: 14px 12px 18px;
   align-content: end;
   background:
-    repeating-linear-gradient(90deg, transparent 0 8%, rgba(24,16,40,0.18) 8% 9%),
-    linear-gradient(#7eb0fc, #2868a0);
-  border: 4px solid var(--ink);
-  border-radius: 16px;
+    radial-gradient(circle, rgba(255,255,255,0.28) 0 2px, transparent 2.4px) 6px 6px / 16px 14px,
+    linear-gradient(180deg, #9aadb8, #6d7f8c);
+  border: 5px solid var(--ink);
+  border-radius: 18px;
   align-self: center;
+  box-shadow: inset 0 8px 0 rgba(255,255,255,0.16), 0 8px 0 #3d4a52;
 }
 .plate.is-mini {
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 3px;
+  padding: 6px 5px 8px;
   gap: 0;
   border-width: 3px;
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: inset 0 4px 0 rgba(255,255,255,0.18);
 }
 .plate.is-win { animation: stroll 1.2s ease-in-out infinite; }
-.plate-cell { display: grid; place-items: stretch; min-height: 0; min-width: 0; }
+.plate-cell { display: grid; place-items: stretch; min-height: 0; min-width: 0; position: relative; }
 .plate-cell.is-ghost {
   border: 3px dashed var(--yellow);
-  border-radius: 6px;
-  opacity: 0.75;
+  border-radius: 8px;
+  opacity: 0.8;
+  background: rgba(252, 232, 116, 0.18);
 }
-.plate-cell.is-guide .lego { opacity: 0.45; }
+.plate-cell.is-guide .lego { opacity: 0.38; filter: saturate(0.8); }
 .plate-cell .lego {
   width: 100%;
-  height: 92%;
+  height: 128%;
   min-width: 0;
   align-self: end;
   transform: none;
 }
-.plate.is-mini .lego {
-  height: 90%;
-  border-width: 2px;
-  padding: 3px 1px 1px;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+.plate-cell.is-pop .lego { animation: brick-pop 0.28s ease-out; }
+@keyframes brick-pop {
+  0% { transform: translateY(-10px) scale(1.12); }
+  100% { transform: translateY(0) scale(1); }
 }
-.plate.is-mini .lego-stud { width: 5px; height: 4px; top: auto; }
-.plate.is-mini .lego-studs { top: -4px; gap: 2px; }
+.plate.is-mini .lego {
+  height: 122%;
+  border-width: 2px;
+  padding: 5px 2px 2px;
+}
+.plate.is-mini .lego-stud { width: 6px; height: 5px; }
+.plate.is-mini .lego-studs { top: -5px; gap: 2px; }
 .bag-item {
   background: transparent;
   min-width: 0;
@@ -294,24 +319,28 @@ button {
   min-width: 44px;
   height: 36px;
   padding: 10px 4px 4px;
-  background: var(--brick);
-  border: 3px solid var(--ink);
-  border-radius: 6px;
-  box-shadow: inset 0 -4px 0 rgba(0,0,0,0.18);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brick) 72%, white) 0%, var(--brick) 42%, color-mix(in srgb, var(--brick) 72%, black) 100%);
+  border: 2px solid var(--ink);
+  border-radius: 5px 5px 7px 7px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,0.32),
+    inset 0 -5px 0 rgba(0,0,0,0.22),
+    0 3px 0 rgba(0,0,0,0.28);
 }
 .lego-w4 { min-width: 68px; }
 .lego-slope {
-  clip-path: polygon(0 100%, 0 55%, 100% 20%, 100% 100%);
+  clip-path: polygon(0 100%, 0 52%, 100% 16%, 100% 100%);
   padding-top: 14px;
 }
-.lego-round { border-radius: 40% 40% 10px 10px; }
-.lego-studs { position: absolute; top: -7px; display: flex; gap: 4px; }
+.lego-round { border-radius: 42% 42% 8px 8px; }
+.lego-studs { position: absolute; top: -8px; display: flex; gap: 4px; }
 .lego-stud {
-  display: block; width: 10px; height: 8px;
-  background: var(--brick);
+  display: block; width: 11px; height: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brick) 60%, white), var(--brick));
   border: 2px solid var(--ink);
-  border-radius: 3px;
-  filter: brightness(1.12);
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 0 rgba(0,0,0,0.25);
 }
 .lego-qty {
   position: absolute; right: -8px; bottom: -8px;
@@ -319,4 +348,8 @@ button {
   border: 2px solid var(--ink); border-radius: 999px;
   font-size: 12px; padding: 0 5px; font-weight: 700;
 }
+.cmd {
+  box-shadow: 0 5px 0 var(--ink);
+}
+.cmd:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
 .cmd .lego { transform: scale(0.92); }

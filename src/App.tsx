@@ -115,9 +115,10 @@ export function App(): JSX.Element {
           <div className="manual">
             <div className="manual-copy">
               <span className="manual-step">
-                {Math.min(pageIndex + 1, bot.pages.length)}/{bot.pages.length}
+                {Math.min(pageIndex + 1, bot.pages.length)}
               </span>
               <span className="manual-slot">{SLOT_LABEL[page.slot]}</span>
+              <span className="manual-of">/{bot.pages.length}</span>
             </div>
             <div className="step-book" aria-label="ta strona">
               <BuildPlate placed={placedOnPage} guides={page.bricks} mini />
@@ -129,6 +130,7 @@ export function App(): JSX.Element {
             <BuildPlate
               placed={placed}
               ghost={hintOn ? nextBrick : null}
+              frame={bot.pages.flatMap((p) => p.bricks)}
               celebrating={phase === 'win'}
             />
           </div>
