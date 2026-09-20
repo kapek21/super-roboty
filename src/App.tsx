@@ -1,102 +1,63 @@
-import { useCallback, useEffect, useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { driverEmoji, driverSrc, loadDriver, saveDriver, type SavedDriver } from './drivers';
-import {
-  FAIL_FACE,
-  ROBOTS,
-  SLOT_EMOJI,
-  bagFor,
-  bankFor,
-  hintBrick,
-  runPage,
-  type FailKind,
-  type RobotDef,
-} from './robots';
+import { ROBOTS, SLOT_EMOJI, bagFor, bankFor, type Place, type RobotDef } from './robots';
 import { AssetImg } from './ui/AssetImg';
 import { BrickView } from './ui/BrickView';
+import { BuildPlate } from './ui/BuildPlate';
 import { DriverGallery } from './ui/DriverGallery';
-import { KitImg } from './ui/KitImg';
 
-type Phase = 'builder' | 'pick-bot' | 'program' | 'run' | 'fail' | 'win';
-
-const STEP_MS = 550;
+type Phase = 'builder' | 'pick-bot' | 'build' | 'win';
 
 export function App(): JSX.Element {
   const [builder, setBuilder] = useState<SavedDriver | null>(() => loadDriver());
   const [phase, setPhase] = useState<Phase>(loadDriver() ? 'pick-bot' : 'builder');
   const [bot, setBot] = useState<RobotDef>(ROBOTS[0]!);
   const [pageIndex, setPageIndex] = useState(0);
-  const [built, setBuilt] = useState<string[]>([]);
-  const [strip, setStrip] = useState<string[]>([]);
-  const [cursor, setCursor] = useState(0);
-  const [fail, setFail] = useState<FailKind | null>(null);
-  const [hint, setHint] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<Place[]>([]);
+  const [hintOn, setHintOn] = useState(false);
+  const [shake, setShake] = useState(false);
 
-  const page = bot.pages[pageIndex]!;
+  const page = bot.pages[pageIndex] ?? bot.pages[0]!;
   const face = builder ? driverEmoji(builder) : '🔧';
   const faceSrc = builder ? driverSrc(builder) : null;
+  const doneOnPage = placed.length - bot.pages.slice(0, pageIndex).reduce((n, p) => n + p.bricks.length, 0);
+  const nextBrick = phase === 'build' ? page.bricks[doneOnPage] ?? null : null;
   const bank = bankFor(page);
-  const bag = bagFor(page);
-  const stacked = strip.slice(0, Math.max(0, cursor));
+  const bag = bagFor({ ...page, bricks: page.bricks.slice(doneOnPage) });
 
   const pickBot = (next: RobotDef): void => {
     setBot(next);
     setPageIndex(0);
-    setBuilt([]);
-    setStrip([]);
-    setCursor(0);
-    setFail(null);
-    setHint(null);
-    setPhase('program');
+    setPlaced([]);
+    setHintOn(false);
+    setPhase('build');
   };
 
-  const resetPage = (): void => {
-    setStrip([]);
-    setCursor(0);
-    setFail(null);
+  const tryPlace = (id: string): void => {
+    if (phase !== 'build' || !nextBrick) return;
+    if (id !== nextBrick.id) {
+      setShake(true);
+      window.setTimeout(() => setShake(false), 420);
+      return;
+    }
+    const nextPlaced = [...placed, nextBrick];
+    setPlaced(nextPlaced);
+    setHintOn(false);
+    if (doneOnPage + 1 < page.bricks.length) return;
+    if (pageIndex + 1 >= bot.pages.length) {
+      setPhase('win');
+      return;
+    }
+    setPageIndex(pageIndex + 1);
   };
 
-  const addBrick = (id: string): void => {
-    if (phase !== 'program') return;
-    if (strip.length >= page.bricks.length + 2) return;
-    setHint(null);
-    setStrip((s) => [...s, id]);
+  const undo = (): void => {
+    if (phase !== 'build') return;
+    const pageStart = bot.pages.slice(0, pageIndex).reduce((n, p) => n + p.bricks.length, 0);
+    if (placed.length <= pageStart) return;
+    setPlaced((s) => s.slice(0, -1));
+    setHintOn(false);
   };
-
-  const play = useCallback((): void => {
-    if (strip.length === 0) return;
-    setHint(null);
-    setFail(null);
-    setCursor(0);
-    setPhase('run');
-  }, [strip.length]);
-
-  useEffect(() => {
-    if (phase !== 'run') return;
-    const outcome = runPage(strip, page);
-    const limit = outcome.ok ? strip.length : outcome.failAt + 1;
-    const timer = window.setTimeout(() => {
-      const next = cursor + 1;
-      if (next < limit) {
-        setCursor(next);
-        return;
-      }
-      setCursor(limit);
-      if (outcome.ok) {
-        const nextBuilt = [...built, page.slot];
-        setBuilt(nextBuilt);
-        if (pageIndex + 1 >= bot.pages.length) setPhase('win');
-        else {
-          setPageIndex(pageIndex + 1);
-          resetPage();
-          setPhase('program');
-        }
-      } else {
-        setFail(outcome.fail);
-        setPhase('fail');
-      }
-    }, cursor === 0 ? 220 : STEP_MS);
-    return () => window.clearTimeout(timer);
-  }, [bot.pages.length, built, cursor, page, pageIndex, phase, strip]);
 
   return (
     <div
@@ -148,147 +109,63 @@ export function App(): JSX.Element {
         </div>
       )}
 
-      {(phase === 'program' || phase === 'run' || phase === 'fail' || phase === 'win') && (
+      {(phase === 'build' || phase === 'win') && (
         <>
           <div className="manual">
             <span className="manual-step">
-              {pageIndex + 1}/{bot.pages.length}
+              {Math.min(pageIndex + 1, bot.pages.length)}/{bot.pages.length}
             </span>
             <span className="manual-slot">{SLOT_EMOJI[page.slot]}</span>
             <AssetImg src={bot.file} fallback={bot.emoji} className="goal-bot" />
           </div>
 
-          <div className={`stage ${phase === 'fail' ? 'is-fail' : ''}`}>
-            {phase === 'win' ? (
-              <AssetImg src={bot.file} fallback={bot.emoji} className={`walk-bot is-${bot.walk}`} />
-            ) : (
-              <>
-                <div className="stage-grid">
-                  {built.map((slot) => {
-                    const crop = bot.crops[slot as keyof typeof bot.crops];
-                    if (!crop) return null;
-                    return (
-                      <KitImg
-                        key={slot}
-                        src={bot.file}
-                        crop={crop}
-                        fallback={SLOT_EMOJI[slot as keyof typeof SLOT_EMOJI]}
-                        className={`stage-part slot-${slot}`}
-                      />
-                    );
-                  })}
-                  {phase !== 'fail' && !built.includes(page.slot) ? (
-                    <span className={`ghost slot-${page.slot}`}>{SLOT_EMOJI[page.slot]}</span>
-                  ) : null}
-                </div>
-                <div className={`stack ${phase === 'fail' ? 'is-fall' : ''}`}>
-                  {stacked.map((id, i) => (
-                    <BrickView key={`${id}-${i}`} id={id} className="stack-brick" />
-                  ))}
-                </div>
-              </>
-            )}
-            {phase === 'fail' && fail ? <p className="fail-face">{FAIL_FACE[fail]}</p> : null}
-            {phase === 'win' ? <p className="fail-face">🎉</p> : null}
+          <div className="stage">
+            <BuildPlate
+              placed={placed}
+              ghost={hintOn ? nextBrick : null}
+              celebrating={phase === 'win'}
+            />
           </div>
 
-          {phase === 'program' || phase === 'run' ? (
-            <div className="bag" aria-label="woreczek">
-              {bag.map((item) => (
-                <BrickView key={item.id} id={item.id} qty={item.qty} />
-              ))}
-            </div>
-          ) : null}
-
-          <div className="program">
-            <div className="strip" aria-label="program">
-              {strip.map((id, i) => (
-                <div
-                  key={`${id}-${i}`}
-                  className={`cmd is-placed ${i < cursor ? 'is-done' : ''} ${
-                    phase === 'run' && i === cursor - 1 ? 'is-now' : ''
-                  }`}
-                >
-                  <BrickView id={id} />
-                </div>
-              ))}
-              {phase === 'program' ? <div className="cmd is-slot" /> : null}
-            </div>
-
-            {phase === 'program' ? (
+          {phase === 'build' ? (
+            <>
+              <div className={`bag ${shake ? 'is-shake' : ''}`} aria-label="woreczek">
+                {bag.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="bag-item"
+                    onClick={() => tryPlace(item.id)}
+                    aria-label={item.id}
+                  >
+                    <BrickView id={item.id} qty={item.qty} />
+                  </button>
+                ))}
+              </div>
               <div className="bank">
                 {bank.map((id) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={`cmd ${hint === id ? 'is-hint' : ''}`}
-                    onClick={() => addBrick(id)}
-                  >
+                  <button key={id} type="button" className="cmd" onClick={() => tryPlace(id)}>
                     <BrickView id={id} />
                   </button>
                 ))}
-                <button
-                  type="button"
-                  className="cmd undo"
-                  onClick={() => {
-                    setHint(null);
-                    setStrip((s) => s.slice(0, -1));
-                  }}
-                  aria-label="cofnij"
-                >
+                <button type="button" className="cmd undo" onClick={undo} aria-label="cofnij">
                   🔙
                 </button>
                 <button
                   type="button"
                   className="cmd play"
-                  onClick={play}
-                  disabled={strip.length === 0}
-                  aria-label="start"
-                >
-                  ▶
-                </button>
-              </div>
-            ) : null}
-
-            {phase === 'fail' ? (
-              <div className="bank">
-                <button
-                  type="button"
-                  className="cmd"
-                  onClick={() => {
-                    setPhase('program');
-                    setCursor(0);
-                    setFail(null);
-                  }}
-                  aria-label="popraw program"
-                >
-                  🔧
-                </button>
-                <button
-                  type="button"
-                  className="cmd play"
-                  onClick={() => {
-                    const outcome = runPage(strip, page);
-                    const prefix =
-                      outcome.fail === 'missing' ? strip : strip.slice(0, Math.max(0, outcome.failAt));
-                    setHint(hintBrick(prefix, page));
-                    setPhase('program');
-                    setCursor(0);
-                    setFail(null);
-                  }}
+                  onClick={() => setHintOn(true)}
                   aria-label="podpowiedź"
                 >
                   🚜
                 </button>
               </div>
-            ) : null}
-
-            {phase === 'win' ? (
-              <button type="button" className="go-btn" onClick={() => setPhase('pick-bot')}>
-                🏠
-              </button>
-            ) : null}
-          </div>
+            </>
+          ) : (
+            <button type="button" className="go-btn" onClick={() => setPhase('pick-bot')}>
+              🏠
+            </button>
+          )}
         </>
       )}
     </div>
